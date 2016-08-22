@@ -25,6 +25,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
@@ -39,7 +40,8 @@ public class Principal extends JFrame {
 	private JTextField txtNomeArquivo;
 	private JTextField txtCaminhoArquivo;
 	private JTextField txtQtdPalavras;
-	private JEditorPane textArea;
+	//private JEditorPane textArea;
+	private JTextArea textArea;
 	private JTextField txtTamanhoAquivo;
 	
 	private String originalText;
@@ -166,7 +168,7 @@ public class Principal extends JFrame {
 		JLabel lblArquivo = new JLabel("Arquivo");
 		lblArquivo.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		
-		textArea = new JEditorPane();
+		textArea = new JTextArea();
 		textArea.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
