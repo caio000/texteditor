@@ -1,0 +1,15 @@
+Esse é um documento de teste para a atividade de LP2, cujo o objetivo é criar um editor de texto.
+O Axum é um fone de ouvido sem fio desenvolvido para garantir alta qualidade de som e conforto para uso mesmo por atletas de esportes radicais. O aparelho, que se beneficia do Bluetooth 4.1 para menor consumo de energia e som convincente, usa tecnologia M-voiD, criada para aplicação em sistemas de som usados em carros de luxo. 
+
+Fone de ouvido à prova d’água: modelos são indicados para esportes
+
+No caso dos fones, a M-voiD é aplicada como uma solução para aprimorar a qualidade do áudio, simulando a performance que um audiófilo esperaria de um som resultante de um sistema mais tradicional, com fios. Em relação a resistência, a fabricante afirma que o modelo é adaptável e fixa o conjunto no ouvido de forma que mesmo quem pratica esportes com muito movimento pode ficar tranquilo com a estabilidade do aparelho.
+
+Além de prometer "grudar" na orelha, o Axum promete resistência à água, garantindo qualidade de som em qualquer momento, sem obrigar o usuário a pausar uma música durante um exercício. 
+
+De acordo com o fabricante, o fone sem fio tem autonomia de bateria de até 8 horas com uma única carga. O processo de recarga também é sem fio, usando um estojo com design que lembra o The Dash, da Bragi, e o Gear IconX, da Samsung. A base funciona com bateria extra e é conectada a uma fonte de energia via cabo microUSB; 
+
+Para usar no dia a dia, o fone da AxumGear também conta com cancelamento de ruído, microfone embutido e habilitação para receber e fazer chamadas. 
+
+Estou criando um software de edição de texto em java. Me pergunte o que estou fazerndo e vou te responder que estou fazendo sucesso.
+

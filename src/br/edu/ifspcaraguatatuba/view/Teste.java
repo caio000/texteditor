@@ -5,6 +5,8 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -22,6 +24,8 @@ import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class Teste extends JFrame {
 
@@ -37,7 +41,7 @@ public class Teste extends JFrame {
 	}
 	
 	
-private void selecionarArquivo () {
+	private void selecionarArquivo () {
 		
 		JFileChooser fc = new JFileChooser();
 		fc.setCurrentDirectory(new File(System.getProperty("user.home")));
@@ -65,6 +69,7 @@ private void selecionarArquivo () {
 				
 				originalText = temp;
 				textArea.setText(temp);
+				txtPathFile.setText(selectedFile.getAbsolutePath());
 				
 				long tamanhoArquivo = selectedFile.length();
 				// TODO Verificar tamnho do arquivo e sua unidade de tamnho como Kb, Mb, Gb .....
@@ -81,18 +86,14 @@ private void selecionarArquivo () {
 	
 	public void initComponent () {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 750, 800);
+		setBounds(100, 100, 750, 600);
 		setLocationRelativeTo(null);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(null);
 		setContentPane(contentPane);
 		
-		textArea = new JTextArea();
-		JScrollPane scrollPane = new JScrollPane(textArea);
-		textArea.setLineWrap(true);
-		scrollPane.setBounds(10, 150, 700, 400);
-		contentPane.add(scrollPane);
+		//-------------------------------------------------MENU----------------------------------------------------------
 		
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.setBounds(0, 0, 784, 21);
@@ -113,6 +114,33 @@ private void selecionarArquivo () {
 		JMenuItem mntmNovo = new JMenuItem("Novo");
 		mnArquivo.add(mntmNovo);
 		
+		JMenuItem mntmSalvar = new JMenuItem("Salvar");
+		mntmSalvar.addMouseListener(new MouseAdapter() { // Opção Salvar do menu
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				
+				String texto = textArea.getText();
+				if (!originalText.equals(texto)) {
+					try {
+						FileWriter fw = new FileWriter(txtPathFile.getText());
+						PrintWriter writer = new PrintWriter(fw);
+						
+						writer.println(texto);
+						
+						writer.close();
+						
+						mntmSalvar.setEnabled(false);
+						JOptionPane.showMessageDialog(contentPane, "Arquivo foi salvo com sucesso!");
+					}catch (Exception e) {
+						JOptionPane.showMessageDialog(contentPane, e.getMessage());
+					}
+				}
+				
+			}
+		});
+		mntmSalvar.setEnabled(false);
+		mnArquivo.add(mntmSalvar);
+		
 		JMenu mnAjuda = new JMenu("Ajuda");
 		mnAjuda.addMouseListener(new MouseAdapter() { // Obção ajuda do menu
 			@Override
@@ -132,6 +160,20 @@ private void selecionarArquivo () {
 			}
 		});
 		menuBar.add(mnSair);
+		
+		//-------------------------------------------------MENU----------------------------------------------------------
+		
+		textArea = new JTextArea();
+		textArea.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				mntmSalvar.setEnabled(true); // ativa o botão Salvar.
+			}
+		});
+		JScrollPane scrollPane = new JScrollPane(textArea);
+		textArea.setLineWrap(true);
+		scrollPane.setBounds(10, 150, 700, 300);
+		contentPane.add(scrollPane);
 		
 		JLabel lblAbsolutPaht = new JLabel("Caminho:");
 		lblAbsolutPaht.setBounds(10, 72, 81, 14);
