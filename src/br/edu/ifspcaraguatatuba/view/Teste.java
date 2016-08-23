@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import javax.swing.JDialog;
@@ -26,6 +27,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.Font;
 
 public class Teste extends JFrame {
 
@@ -34,12 +36,69 @@ public class Teste extends JFrame {
 	private JTextField txtPathFile;
 	private JTextArea textArea;
 	
-	private String originalText;
+	private String originalText = " ";
+	private JTextField txtFilename;
+	
+	private JMenuItem mntmSalvar;
+	private JTextField txtPath;
+	private JTextField txtFileSize;
+	
+	private JLabel lblQtdPalavras;
 
 	public Teste() {
+		setTitle("Editor de texto");
 		initComponent();
 	}
 	
+	
+	
+	private void checkFile () {
+		String text = textArea.getText();
+		 
+		 if (!originalText.equals(text)) {
+			 String message = "Você fez modificações no arquivo deseja salvar o arquivo?";
+			 int option = JOptionPane.showConfirmDialog(contentPane, message);
+			 
+			 if (option == 0)
+				 salvarArquivo();
+		 }
+	}
+	
+	private void reset () {
+		txtFilename.setText("");
+		txtPathFile.setText("");
+		textArea.setText("");
+	}
+	
+	private String qtdPalavras (String text) {
+		String qtd = null;
+		
+		String[] palavras = text.split(" "); // Gera um array de palavras
+		qtd = Integer.toString(palavras.length) + " palavra(s)";
+		
+		return qtd;
+	}
+	
+	private void salvarArquivo () {
+		
+		String texto = textArea.getText();
+		if (!originalText.equals(texto)) {
+			try {
+				FileWriter fw = new FileWriter(txtPathFile.getText());
+				PrintWriter writer = new PrintWriter(fw);
+				
+				writer.println(texto);
+				
+				writer.close();
+				
+				mntmSalvar.setEnabled(false);
+				originalText = textArea.getText();
+				JOptionPane.showMessageDialog(contentPane, "Arquivo foi salvo com sucesso!");
+			}catch (Exception e) {
+				JOptionPane.showMessageDialog(contentPane, e.getMessage());
+			}
+		}
+	}
 	
 	private void selecionarArquivo () {
 		
@@ -70,8 +129,12 @@ public class Teste extends JFrame {
 				originalText = temp;
 				textArea.setText(temp);
 				txtPathFile.setText(selectedFile.getAbsolutePath());
+				txtFilename.setText(selectedFile.getName());
+				txtPath.setText(selectedFile.getAbsolutePath());
+				double size = selectedFile.length() / 1000;
+				txtFileSize.setText(Double.toString(size));
 				
-				long tamanhoArquivo = selectedFile.length();
+				lblQtdPalavras.setText(qtdPalavras(temp));
 				// TODO Verificar tamnho do arquivo e sua unidade de tamnho como Kb, Mb, Gb .....
 				
 				arq.close();
@@ -112,30 +175,51 @@ public class Teste extends JFrame {
 		mnArquivo.add(mntmAbrir);
 		
 		JMenuItem mntmNovo = new JMenuItem("Novo");
+		mntmNovo.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				checkFile();
+				reset();
+			}
+		});
 		mnArquivo.add(mntmNovo);
 		
-		JMenuItem mntmSalvar = new JMenuItem("Salvar");
+		mntmSalvar = new JMenuItem("Salvar");
 		mntmSalvar.addMouseListener(new MouseAdapter() { // Opção Salvar do menu
 			@Override
 			public void mousePressed(MouseEvent arg0) {
 				
-				String texto = textArea.getText();
-				if (!originalText.equals(texto)) {
-					try {
-						FileWriter fw = new FileWriter(txtPathFile.getText());
-						PrintWriter writer = new PrintWriter(fw);
+				if (txtPathFile.getText().isEmpty()) {
+					System.out.println("Esta vazio");
+					
+					JFileChooser fc = new JFileChooser();
+					
+					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					
+					int result = fc.showSaveDialog(contentPane);
+					
+					if (result == JFileChooser.APPROVE_OPTION) {
+						String path = fc.getSelectedFile().getAbsolutePath() + "\\Teste.txt";
+						System.out.println(path);
 						
-						writer.println(texto);
-						
-						writer.close();
-						
-						mntmSalvar.setEnabled(false);
-						JOptionPane.showMessageDialog(contentPane, "Arquivo foi salvo com sucesso!");
-					}catch (Exception e) {
-						JOptionPane.showMessageDialog(contentPane, e.getMessage());
+						try {
+							FileWriter fw = new FileWriter(path);
+							PrintWriter writer = new PrintWriter(fw);
+							
+							writer.print(textArea.getText());
+							
+							writer.close();
+							
+							originalText = textArea.getText();
+							JOptionPane.showMessageDialog(contentPane, "Arquivo salvo com sucesso!");
+							
+							reset();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
-				}
-				
+				} else
+					salvarArquivo();
 			}
 		});
 		mntmSalvar.setEnabled(false);
@@ -156,6 +240,7 @@ public class Teste extends JFrame {
 		mnSair.addMouseListener(new MouseAdapter() { // Opção sair do menu
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
+				checkFile(); 
 				dispose();
 			}
 		});
@@ -163,7 +248,7 @@ public class Teste extends JFrame {
 		
 		//-------------------------------------------------MENU----------------------------------------------------------
 		
-		textArea = new JTextArea();
+		textArea = new JTextArea(" ");
 		textArea.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
@@ -172,7 +257,7 @@ public class Teste extends JFrame {
 		});
 		JScrollPane scrollPane = new JScrollPane(textArea);
 		textArea.setLineWrap(true);
-		scrollPane.setBounds(10, 150, 700, 300);
+		scrollPane.setBounds(10, 100, 700, 300);
 		contentPane.add(scrollPane);
 		
 		JLabel lblAbsolutPaht = new JLabel("Caminho:");
@@ -180,7 +265,7 @@ public class Teste extends JFrame {
 		contentPane.add(lblAbsolutPaht);
 		
 		txtPathFile = new JTextField();
-		txtPathFile.setBounds(101, 69, 400, 20);
+		txtPathFile.setBounds(65, 69, 546, 20);
 		txtPathFile.setEditable(false);
 		contentPane.add(txtPathFile);
 		txtPathFile.setColumns(10);
@@ -191,8 +276,48 @@ public class Teste extends JFrame {
 				selecionarArquivo();
 			}
 		});
-		btnOpenFile.setBounds(538, 68, 89, 23);
+		btnOpenFile.setBounds(621, 68, 89, 23);
 		contentPane.add(btnOpenFile);
+		
+		JLabel lblNomeDoArquivo = new JLabel("Nome do arquivo:");
+		lblNomeDoArquivo.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblNomeDoArquivo.setBounds(10, 420, 131, 21);
+		contentPane.add(lblNomeDoArquivo);
+		
+		txtFilename = new JTextField();
+		txtFilename.setBounds(214, 422, 496, 20);
+		contentPane.add(txtFilename);
+		txtFilename.setColumns(10);
+		
+		txtPath = new JTextField();
+		txtPath.setBounds(214, 453, 496, 20);
+		contentPane.add(txtPath);
+		txtPath.setColumns(10);
+		
+		JLabel lblCaminho = new JLabel("Caminho:");
+		lblCaminho.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblCaminho.setBounds(10, 458, 111, 14);
+		contentPane.add(lblCaminho);
+		
+		txtFileSize = new JTextField();
+		txtFileSize.setEditable(false);
+		txtFileSize.setBounds(214, 484, 73, 20);
+		contentPane.add(txtFileSize);
+		txtFileSize.setColumns(10);
+		
+		JLabel lblFileSize = new JLabel("Tamanho do arquivo:");
+		lblFileSize.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblFileSize.setBounds(10, 486, 142, 14);
+		contentPane.add(lblFileSize);
+		
+		JLabel lblSizeFile = new JLabel("");
+		lblSizeFile.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblSizeFile.setBounds(294, 490, 46, 14);
+		contentPane.add(lblSizeFile);
+		
+		lblQtdPalavras = new JLabel("");
+		lblQtdPalavras.setBounds(326, 536, 246, 14);
+		contentPane.add(lblQtdPalavras);
 		
 		
 	}
