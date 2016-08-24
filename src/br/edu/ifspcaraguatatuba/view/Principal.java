@@ -1,5 +1,10 @@
 package br.edu.ifspcaraguatatuba.view;
 
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -8,28 +13,24 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DecimalFormat;
 
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.border.EmptyBorder;
-import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.JButton;
-import javax.swing.JMenuItem;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.Font;
+import javax.swing.border.EmptyBorder;
 
-public class Teste extends JFrame {
+public class Principal extends JFrame {
 
 	private static final long serialVersionUID = 7502264362257727351L;
 	private JPanel contentPane;
@@ -44,8 +45,9 @@ public class Teste extends JFrame {
 	private JTextField txtFileSize;
 	
 	private JLabel lblQtdPalavras;
+	private JLabel lblSizeFile;
 
-	public Teste() {
+	public Principal () {
 		setTitle("Editor de texto");
 		initComponent();
 	}
@@ -59,8 +61,10 @@ public class Teste extends JFrame {
 			 String message = "Você fez modificações no arquivo deseja salvar o arquivo?";
 			 int option = JOptionPane.showConfirmDialog(contentPane, message);
 			 
-			 if (option == 0)
-				 salvarArquivo();
+			 if (option == 0 && txtPathFile.getText().isEmpty())
+				 salvarArquivo(true);
+			 else if ( option == 0 )
+				 salvarArquivo(false);
 		 }
 	}
 	
@@ -68,6 +72,11 @@ public class Teste extends JFrame {
 		txtFilename.setText("");
 		txtPathFile.setText("");
 		textArea.setText("");
+		originalText = "";
+		txtFileSize.setText("");
+		lblQtdPalavras.setText("");
+		lblSizeFile.setText("");
+		txtPath.setText("");
 	}
 	
 	private String qtdPalavras (String text) {
@@ -79,23 +88,53 @@ public class Teste extends JFrame {
 		return qtd;
 	}
 	
-	private void salvarArquivo () {
+	private void salvarArquivo (boolean isNewFile) {
 		
 		String texto = textArea.getText();
 		if (!originalText.equals(texto)) {
-			try {
-				FileWriter fw = new FileWriter(txtPathFile.getText());
-				PrintWriter writer = new PrintWriter(fw);
+			
+			if ( isNewFile ) {
+				JFileChooser fc = new JFileChooser();
 				
-				writer.println(texto);
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				
-				writer.close();
+				int result = fc.showSaveDialog(contentPane);
 				
-				mntmSalvar.setEnabled(false);
-				originalText = textArea.getText();
-				JOptionPane.showMessageDialog(contentPane, "Arquivo foi salvo com sucesso!");
-			}catch (Exception e) {
-				JOptionPane.showMessageDialog(contentPane, e.getMessage());
+				if (result == JFileChooser.APPROVE_OPTION) {
+					String path = fc.getSelectedFile().getAbsolutePath() + "\\Teste.txt";
+					System.out.println(path);
+					
+					try {
+						FileWriter fw = new FileWriter(path);
+						PrintWriter writer = new PrintWriter(fw);
+						
+						writer.print(textArea.getText());
+						
+						writer.close();
+						
+						originalText = textArea.getText();
+						JOptionPane.showMessageDialog(contentPane, "Arquivo salvo com sucesso!");
+						
+						reset();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			} else {
+				try {
+					FileWriter fw = new FileWriter(txtPathFile.getText());
+					PrintWriter writer = new PrintWriter(fw);
+					
+					writer.println(texto);
+					
+					writer.close();
+					
+					mntmSalvar.setEnabled(false);
+					originalText = textArea.getText();
+					JOptionPane.showMessageDialog(contentPane, "Arquivo foi salvo com sucesso!");
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(contentPane, e.getMessage());
+				}
 			}
 		}
 	}
@@ -111,7 +150,7 @@ public class Teste extends JFrame {
 			if (result == JFileChooser.APPROVE_OPTION) {
 				// selecionou um arquivo
 				File selectedFile = fc.getSelectedFile();
-				if (!selectedFile.getName().endsWith(".txt")) {
+				if (!selectedFile.getName().endsWith(".txt") ) {
 					throw new Exception("Selecione um arquivo com a extensão .TXT");
 				}
 				
@@ -131,11 +170,9 @@ public class Teste extends JFrame {
 				txtPathFile.setText(selectedFile.getAbsolutePath());
 				txtFilename.setText(selectedFile.getName());
 				txtPath.setText(selectedFile.getAbsolutePath());
-				double size = selectedFile.length() / 1000;
-				txtFileSize.setText(Double.toString(size));
-				
+				long size = selectedFile.length();
+				convertFileSize(size);
 				lblQtdPalavras.setText(qtdPalavras(temp));
-				// TODO Verificar tamnho do arquivo e sua unidade de tamnho como Kb, Mb, Gb .....
 				
 				arq.close();
 			}
@@ -145,7 +182,41 @@ public class Teste extends JFrame {
 		
 	}
 	
-	
+	private void convertFileSize (long fileSize) {
+		
+		double temp = fileSize;
+		int count = 0;
+		String medidaArmazenamento;
+		
+		do {
+			temp /= 1024;
+			count++;
+		} while ( temp > 1024 );
+		
+		switch (count) {
+		case 1:
+			medidaArmazenamento = "Kb";
+			break;
+		case 2:
+			medidaArmazenamento = "Mb";
+			break;
+		case 3:
+			medidaArmazenamento = "Gb";
+			break;
+		case 4:
+			medidaArmazenamento = "Tb";
+
+		default:
+			medidaArmazenamento = "";
+			break;
+		}
+		
+		DecimalFormat df = new DecimalFormat("#.#");
+		
+		txtFileSize.setText( df.format(temp) );
+		lblSizeFile.setText( medidaArmazenamento );
+		
+	}
 	
 	public void initComponent () {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -190,36 +261,9 @@ public class Teste extends JFrame {
 			public void mousePressed(MouseEvent arg0) {
 				
 				if (txtPathFile.getText().isEmpty()) {
-					System.out.println("Esta vazio");
-					
-					JFileChooser fc = new JFileChooser();
-					
-					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-					
-					int result = fc.showSaveDialog(contentPane);
-					
-					if (result == JFileChooser.APPROVE_OPTION) {
-						String path = fc.getSelectedFile().getAbsolutePath() + "\\Teste.txt";
-						System.out.println(path);
-						
-						try {
-							FileWriter fw = new FileWriter(path);
-							PrintWriter writer = new PrintWriter(fw);
-							
-							writer.print(textArea.getText());
-							
-							writer.close();
-							
-							originalText = textArea.getText();
-							JOptionPane.showMessageDialog(contentPane, "Arquivo salvo com sucesso!");
-							
-							reset();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
+					salvarArquivo(true);
 				} else
-					salvarArquivo();
+					salvarArquivo(false);
 			}
 		});
 		mntmSalvar.setEnabled(false);
@@ -253,6 +297,7 @@ public class Teste extends JFrame {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
 				mntmSalvar.setEnabled(true); // ativa o botão Salvar.
+				lblQtdPalavras.setText(qtdPalavras(textArea.getText()));
 			}
 		});
 		JScrollPane scrollPane = new JScrollPane(textArea);
@@ -310,7 +355,7 @@ public class Teste extends JFrame {
 		lblFileSize.setBounds(10, 486, 142, 14);
 		contentPane.add(lblFileSize);
 		
-		JLabel lblSizeFile = new JLabel("");
+		lblSizeFile = new JLabel("");
 		lblSizeFile.setFont(new Font("Tahoma", Font.BOLD, 14));
 		lblSizeFile.setBounds(294, 490, 46, 14);
 		contentPane.add(lblSizeFile);
